@@ -1,0 +1,27 @@
+menu "Example Configuration"
+
+config ESP_WIFI_SSID
+    string "WiFi SSID"
+    default "myssid"
+    help
+	SSID (network name) for the example to connect to.
+
+config ESP_WIFI_PASSWORD
+    string "WiFi Password"
+    default "mypassword"
+    help
+	WiFi password (WPA or WPA2) for the example to use.
+
+config PROJECT_ID
+    string "Google Cloud Project ID"
+    default "project_id"
+    help 
+    Google Cloud project ID
+
+config DEVICE_PATH
+    string "Google Cloud Device path"
+    default "device_path"
+    help 
+    projects/<project-id>/locations/<registry-location>/registries/<registry-id>/devices/<device-id>
+
+endmenu
