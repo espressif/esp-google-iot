@@ -1,0 +1,3 @@
+[submodule "iot-edge-sdk-embedded-c"]
+	path = iot-edge-sdk-embedded-c
+	url = git@github.com:GoogleCloudPlatform/iot-edge-sdk-embedded-c.git
