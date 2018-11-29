@@ -25,15 +25,19 @@ Copy the private key created in the earlier step to `main/certs/private_key.pem`
 
 *NOTE: Don't accidentally commit private key to public source*
 
-### Set Project ID and Device Path
+### Device Configuration
 
-Under `make menuconfig` -> `Example Configuration`, set these details.
+#### Wifi Setting
+
+Under `make menuconfig` -> `Example Configuration`, set `WiFi SSID` and `WiFI Password`
+
+#### Google IoT Core Device Setting
+
+Set Project ID, Location, Registry ID and Device ID under `make menuconfig` -> `Component config` -> `Google IoT Core Configuration`
 
 `project_id` of your project can be fetched from [resources page](https://console.cloud.google.com/cloud-resource-manager)
 
-`device_path` is `projects/<project_id>/locations/<registry_location>/registries/<registry_id>/devices/<device_id>`
-
-*NOTE: Fetch `registry_location`, `registry_id` and `device_id` from the registry created earlier.*
+Fetch `location`, `registry_id` and `device_id` from the registry created earlier.
 
 ## MQTT Publish/Subscribe
 
