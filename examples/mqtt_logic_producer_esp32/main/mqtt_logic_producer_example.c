@@ -32,8 +32,10 @@ const static int CONNECTED_BIT = BIT0;
 
 #define IOTC_UNUSED(x) (void)(x)
 
-static const char *iotc_publish_topic = "/devices/esp32-devkitc-v4/events";
-static const char *iotc_subscribe_topic = "/devices/esp32-devkitc-v4/commands/#";
+#define DEVICE_PATH "projects/%s/locations/%s/registries/%s/devices/%s"
+#define SUBSCRIBE_TOPIC_COMMAND "/devices/%s/commands/#"
+#define PUBLISH_TOPIC_EVENT "/devices/%s/events"
+
 static const char *iotc_publish_message = "Hello From Your ESP32 IoTC client!";
 iotc_mqtt_qos_t iotc_example_qos = IOTC_MQTT_QOS_AT_LEAST_ONCE;
 static iotc_timed_task_handle_t delayed_publish_task =
@@ -69,12 +71,15 @@ void publish_function(iotc_context_handle_t context_handle,
 {
     IOTC_UNUSED(timed_task);
     IOTC_UNUSED(user_data);
-    printf("publishing msg \"%s\" to topic: \"%s\"\n", iotc_publish_message,
-           iotc_publish_topic);
 
-    iotc_publish(context_handle, iotc_publish_topic, iotc_publish_message,
+    char *publish_topic = NULL;
+    asprintf(&publish_topic, PUBLISH_TOPIC_EVENT, CONFIG_GIOT_DEVICE_ID);
+    printf("publishing msg \"%s\" to topic: \"%s\"\n", iotc_publish_message, publish_topic);
+
+    iotc_publish(context_handle, publish_topic, iotc_publish_message,
                  iotc_example_qos,
                  /*callback=*/NULL, /*user_data=*/NULL);
+    free(publish_topic);
 }
 
 void iotc_itest_mqttlogic_subscribe_callback(
@@ -94,9 +99,14 @@ void subscribe_function(iotc_context_handle_t context_handle,
 {
     IOTC_UNUSED(timed_task);
     IOTC_UNUSED(user_data);
-    printf("subscribe to topic: \"%s\"\n", iotc_subscribe_topic);
-    iotc_subscribe(context_handle, iotc_subscribe_topic, IOTC_MQTT_QOS_AT_LEAST_ONCE,
+
+    char *subscribe_topic_command = NULL;
+    asprintf(&subscribe_topic_command, SUBSCRIBE_TOPIC_COMMAND, CONFIG_GIOT_DEVICE_ID);
+
+    printf("subscribe to topic: \"%s\"\n", subscribe_topic_command);
+    iotc_subscribe(context_handle, subscribe_topic_command, IOTC_MQTT_QOS_AT_LEAST_ONCE,
                    &iotc_itest_mqttlogic_subscribe_callback, /*user_data=*/NULL);
+    free(subscribe_topic_command);
 }
 
 void on_connection_state_changed(iotc_context_handle_t in_context_handle,
@@ -258,10 +268,12 @@ static void mqtt_task(void *pvParameters)
     key_data.private_key_union_type = IOTC_CRYPTO_KEY_UNION_TYPE_PEM;
     key_data.private_key_union.key_pem.key = ec_pv_key_start;
 
-    iotc_connect(iotc_context, CONFIG_GIOT_PROJECT_ID, CONFIG_GIOT_DEVICE_PATH, &key_data,
+    char *device_path = NULL;
+    asprintf(&device_path, DEVICE_PATH, CONFIG_GIOT_PROJECT_ID, CONFIG_GIOT_LOCATION, CONFIG_GIOT_REGISTRY_ID, CONFIG_GIOT_DEVICE_ID);
+    iotc_connect(iotc_context, CONFIG_GIOT_PROJECT_ID, device_path, &key_data,
                  /*{jwt_expiration_period_sec=*/3600, connection_timeout,
                  keepalive_timeout, &on_connection_state_changed);
-
+    free(device_path);
     /* The IoTC Client was designed to be able to run on single threaded devices.
         As such it does not have its own event loop thread. Instead you must
         regularly call the function iotc_events_process_blocking() to process
