@@ -1,0 +1,20 @@
+menu "Google IoT Core Configuration"
+
+config GIOT_PROJECT_ID
+    string "Google Cloud Project ID"
+    default "project_id"
+    help
+        Google Cloud project ID
+
+config GIOT_DEVICE_PATH
+    string "Google Cloud Device path"
+    default "device_path"
+    help
+       projects/<project-id>/locations/<registry-location>/registries/<registry-id>/devices/<device-id>
+
+config GIOT_DEBUG_OUTPUT
+    bool "Enable debugging"
+    help
+        Select this option to enable debugging support
+
+endmenu

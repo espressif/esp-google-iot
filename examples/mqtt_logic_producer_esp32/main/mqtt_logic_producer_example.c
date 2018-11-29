@@ -258,7 +258,7 @@ static void mqtt_task(void *pvParameters)
     key_data.private_key_union_type = IOTC_CRYPTO_KEY_UNION_TYPE_PEM;
     key_data.private_key_union.key_pem.key = ec_pv_key_start;
 
-    iotc_connect(iotc_context, CONFIG_PROJECT_ID, CONFIG_DEVICE_PATH, &key_data,
+    iotc_connect(iotc_context, CONFIG_GIOT_PROJECT_ID, CONFIG_GIOT_DEVICE_PATH, &key_data,
                  /*{jwt_expiration_period_sec=*/3600, connection_timeout,
                  keepalive_timeout, &on_connection_state_changed);
 
