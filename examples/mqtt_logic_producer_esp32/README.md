@@ -1,5 +1,4 @@
 # Google IoT Core Example
-___________________________________________
 
 ## Setup
 
@@ -10,7 +9,7 @@ Follow this [getting-started-guide ](https://cloud.google.com/iot/docs/how-tos/g
 ### Create Public/Private Key pair
 
 As of now, only Elliptic curve algorithm for device authentication is supported.
-So, navigate to `Generating an ES256 key` sub section in this [guide](https://cloud.google.com/iot/docs/how-tos/credentials/keys) and follow the instructions given there.
+So, navigate to `Generating an ES256 key` sub section in this [guide](https://cloud.google.com/iot/docs/how-tos/credentials/keys#generating_an_es256_key) and follow the instructions given there.
 
 ### Create Registries and Devices
 
