@@ -49,7 +49,10 @@ COMPONENT_SRCDIRS := \
 
 COMPONENT_SUBMODULES := iot-edge-sdk-embedded-c
 
-COMPONENT_OBJEXCLUDE := iot-edge-sdk-embedded-c/src/libiotc/iotc_test.o
+COMPONENT_OBJEXCLUDE := iot-edge-sdk-embedded-c/src/libiotc/iotc_test.o \
+                        iot-edge-sdk-embedded-c/src/libiotc/iotc_jwt_test.o \
+                        iot-edge-sdk-embedded-c/src/libiotc/event_dispatcher/iotc_event_dispatcher_test.o \
+                        iot-edge-sdk-embedded-c/src/libiotc/event_dispatcher/iotc_event_handle_test.o
 
 CFLAGS += -DIOTC_FS_MEMORY \
           -DIOTC_MEMORY_LIMITER_APPLICATION_MEMORY_LIMIT=524288 \
