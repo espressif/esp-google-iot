@@ -266,7 +266,7 @@ static void mqtt_task(void *pvParameters)
     key_data.private_key_signature_algorithm =
         IOTC_JWT_PRIVATE_KEY_SIGNATURE_ALGORITHM_ES256;
     key_data.private_key_union_type = IOTC_CRYPTO_KEY_UNION_TYPE_PEM;
-    key_data.private_key_union.key_pem.key = ec_pv_key_start;
+    key_data.private_key_union.key_pem.key = (char *) ec_pv_key_start;
 
     char *device_path = NULL;
     asprintf(&device_path, DEVICE_PATH, CONFIG_GIOT_PROJECT_ID, CONFIG_GIOT_LOCATION, CONFIG_GIOT_REGISTRY_ID, CONFIG_GIOT_DEVICE_ID);
