@@ -4,4 +4,4 @@ cmake_minimum_required(VERSION 3.5)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 set (EXTRA_COMPONENT_DIRS "${CMAKE_CURRENT_BINARY_DIR}/../../../../esp-google-iot/")
-project(mqtt_logic_producer_esp32)
+project(smart_outlet)

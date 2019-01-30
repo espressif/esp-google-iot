@@ -1,4 +1,4 @@
-# Google IoT Core Example
+# Smart Outlet Example
 
 ## Setup
 
@@ -43,6 +43,19 @@ Fetch `location`, `registry_id` and `device_id` from the registry created earlie
 
 After flashing the example to your ESP32, it should connect to Google IoT Core and start subscribing/publishing MQTT data.
 
-This example publishes data to the topic `/devices/{device-id}/events`
+### Telemetry Event
 
-You can send commands to the device by following instruction given [here](https://cloud.google.com/iot/docs/how-tos/commands), as a subscription to the wildcard topic `/devices/{device-id}/commands/#` is established in this example. 
+This example publishes temperature data every 10 seconds to the topic `/devices/{device-id}/events`
+
+### Device Configuration
+
+To know more about configuring devices from Google IoT Core visit [here](https://cloud.google.com/iot/docs/how-tos/config/configuring-devices)
+
+A subscription to the topic `/devices/{device-id}/config` is established on start-up, thus you recieve configuration details in the registered subscribe callback `iotc_mqttlogic_subscribe_callback`
+
+### Send Device Command
+As a subscription to the wildcard topic `/devices/{device-id}/commands/#` is established in this example, you can send commands to the device by following instruction given [here](https://cloud.google.com/iot/docs/how-tos/commands).
+
+- Set Output GPIO under `make menuconfig` -> `Example Configuration` -> `Output GPIO`
+- Send `{ "outlet": 0 }` or `{ "outlet": 1 }` from Google Cloud IoT Core Device Console to change GPIO output.
+

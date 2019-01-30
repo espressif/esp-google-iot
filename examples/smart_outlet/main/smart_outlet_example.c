@@ -1,4 +1,4 @@
-/* MQTT LOGIC Producer Example
+/* Smart Outlet Example
 
    This example code is in the Public Domain (or CC0 licensed, at your option.)
 
@@ -6,6 +6,7 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
+#include <stdlib.h>
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -15,8 +16,10 @@
 #include "esp_event_loop.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
+#include "jsmn.h"
 #include <time.h>
 #include "lwip/apps/sntp.h"
+#include "driver/gpio.h"
 
 #include "lwip/err.h"
 #include "lwip/sys.h"
@@ -34,13 +37,32 @@ const static int CONNECTED_BIT = BIT0;
 
 #define DEVICE_PATH "projects/%s/locations/%s/registries/%s/devices/%s"
 #define SUBSCRIBE_TOPIC_COMMAND "/devices/%s/commands/#"
+#define SUBSCRIBE_TOPIC_CONFIG "/devices/%s/config"
 #define PUBLISH_TOPIC_EVENT "/devices/%s/events"
+#define PUBLISH_TOPIC_STATE "/devices/%s/state"
+#define TEMPERATURE_DATA "{temp : %d}"
+#define MIN_TEMP 20
+#define OUTPUT_GPIO CONFIG_OUTPUT_GPIO
 
-static const char *iotc_publish_message = "Hello From Your ESP32 IoTC client!";
+char *subscribe_topic_command, *subscribe_topic_config;
+
 iotc_mqtt_qos_t iotc_example_qos = IOTC_MQTT_QOS_AT_LEAST_ONCE;
 static iotc_timed_task_handle_t delayed_publish_task =
      IOTC_INVALID_TIMED_TASK_HANDLE;
 iotc_context_handle_t iotc_context = IOTC_INVALID_CONTEXT_HANDLE;
+
+
+static void driver_init()
+{
+    /* Configure output */
+    gpio_config_t io_conf = {
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = 1,
+    };
+    io_conf.pin_bit_mask = ((uint64_t)1 << OUTPUT_GPIO);
+    /* Configure the GPIO */
+    gpio_config(&io_conf);
+}
 
 static void initialize_sntp(void)
 {
@@ -66,7 +88,7 @@ static void obtain_time(void)
     ESP_LOGI(TAG, "Time is set...");
 }
 
-void publish_function(iotc_context_handle_t context_handle,
+void publish_telemetry_event(iotc_context_handle_t context_handle,
                       iotc_timed_task_handle_t timed_task, void *user_data)
 {
     IOTC_UNUSED(timed_task);
@@ -74,39 +96,47 @@ void publish_function(iotc_context_handle_t context_handle,
 
     char *publish_topic = NULL;
     asprintf(&publish_topic, PUBLISH_TOPIC_EVENT, CONFIG_GIOT_DEVICE_ID);
-    printf("publishing msg \"%s\" to topic: \"%s\"\n", iotc_publish_message, publish_topic);
+    char *publish_message = NULL;
+    asprintf(&publish_message, TEMPERATURE_DATA, MIN_TEMP + rand() % 10);
+    ESP_LOGI(TAG, "publishing msg \"%s\" to topic: \"%s\"\n", publish_message, publish_topic);
 
-    iotc_publish(context_handle, publish_topic, iotc_publish_message,
+    iotc_publish(context_handle, publish_topic, publish_message,
                  iotc_example_qos,
                  /*callback=*/NULL, /*user_data=*/NULL);
     free(publish_topic);
 }
 
-void iotc_itest_mqttlogic_subscribe_callback(
+void iotc_mqttlogic_subscribe_callback(
     iotc_context_handle_t in_context_handle, iotc_sub_call_type_t call_type,
     const iotc_sub_call_params_t *const params, iotc_state_t state,
     void *user_data)
 {
     IOTC_UNUSED(in_context_handle);
     IOTC_UNUSED(call_type);
-    IOTC_UNUSED(params);
     IOTC_UNUSED(state);
     IOTC_UNUSED(user_data);
-}
-
-void subscribe_function(iotc_context_handle_t context_handle,
-                        iotc_timed_task_handle_t timed_task, void *user_data)
-{
-    IOTC_UNUSED(timed_task);
-    IOTC_UNUSED(user_data);
-
-    char *subscribe_topic_command = NULL;
-    asprintf(&subscribe_topic_command, SUBSCRIBE_TOPIC_COMMAND, CONFIG_GIOT_DEVICE_ID);
-
-    printf("subscribe to topic: \"%s\"\n", subscribe_topic_command);
-    iotc_subscribe(context_handle, subscribe_topic_command, IOTC_MQTT_QOS_AT_LEAST_ONCE,
-                   &iotc_itest_mqttlogic_subscribe_callback, /*user_data=*/NULL);
-    free(subscribe_topic_command);
+    if (params != NULL && params->message.topic != NULL) {
+        ESP_LOGI(TAG, "Subscription Topic: %s\n", params->message.topic);
+        char *sub_message = (char *)malloc(params->message.temporary_payload_data_length + 1);
+        if (sub_message == NULL) {
+            ESP_LOGE(TAG, "Failed to allocate memory");
+            return;
+        }
+        memcpy(sub_message, params->message.temporary_payload_data, params->message.temporary_payload_data_length);
+        sub_message[params->message.temporary_payload_data_length] = '\0';
+        ESP_LOGI(TAG, "Message Payload: %s \n", sub_message);
+        if (strcmp(subscribe_topic_command, params->message.topic) == 0) {
+            int value;
+            sscanf(sub_message, "{\"outlet\": %d}", &value);
+            ESP_LOGI(TAG, "value: %d\n", value);
+            if (value == 1) {
+                gpio_set_level(OUTPUT_GPIO, true);
+            } else if (value == 0) {
+                gpio_set_level(OUTPUT_GPIO, false);
+            }
+        }
+        free(sub_message);
+    }
 }
 
 void on_connection_state_changed(iotc_context_handle_t in_context_handle,
@@ -124,13 +154,19 @@ void on_connection_state_changed(iotc_context_handle_t in_context_handle,
         /* Publish immediately upon connect. 'publish_function' is defined
            in this example file and invokes the IoTC API to publish a
            message. */
-        publish_function(in_context_handle, IOTC_INVALID_TIMED_TASK_HANDLE,
-                         /*user_data=*/NULL);
-        subscribe_function(in_context_handle, IOTC_INVALID_TIMED_TASK_HANDLE,
-                           /*user_data=*/NULL);
-        /* Create a timed task to publish every 5 seconds. */
+        asprintf(&subscribe_topic_command, SUBSCRIBE_TOPIC_COMMAND, CONFIG_GIOT_DEVICE_ID);
+        printf("subscribe to topic: \"%s\"\n", subscribe_topic_command);
+        iotc_subscribe(in_context_handle, subscribe_topic_command, IOTC_MQTT_QOS_AT_LEAST_ONCE,
+                       &iotc_mqttlogic_subscribe_callback, /*user_data=*/NULL);
+
+        asprintf(&subscribe_topic_config, SUBSCRIBE_TOPIC_CONFIG, CONFIG_GIOT_DEVICE_ID);
+        printf("subscribe to topic: \"%s\"\n", subscribe_topic_config);
+        iotc_subscribe(in_context_handle, subscribe_topic_config, IOTC_MQTT_QOS_AT_LEAST_ONCE,
+                       &iotc_mqttlogic_subscribe_callback, /*user_data=*/NULL);
+
+        /* Create a timed task to publish every 10 seconds. */
         delayed_publish_task = iotc_schedule_timed_task(in_context_handle,
-                                                        publish_function, 5,
+                                                        publish_telemetry_event, 10,
                                                         15, /*user_data=*/NULL);
         break;
 
@@ -138,6 +174,10 @@ void on_connection_state_changed(iotc_context_handle_t in_context_handle,
        when establishing a connection to the server. The reason for the error
        is contained in the 'state' variable. Here we log the error state and
        exit out of the application. */
+
+        /* Publish immediately upon connect. 'publish_function' is defined
+           in this example file and invokes the IoTC API to publish a
+           message. */
     case IOTC_CONNECTION_STATE_OPEN_FAILED:
         printf("ERROR!\tConnection has failed reason %d\n\n", state);
 
@@ -153,6 +193,8 @@ void on_connection_state_changed(iotc_context_handle_t in_context_handle,
        requested a disconnection via 'iotc_shutdown_connection'. If the state !=
        IOTC_STATE_OK then the connection has been closed from one side. */
     case IOTC_CONNECTION_STATE_CLOSED:
+        free(subscribe_topic_command);
+        free(subscribe_topic_config);
         /* When the connection is closed it's better to cancel some of previously
            registered activities. Using cancel function on handler will remove the
            handler from the timed queue which prevents the registered handle to be
@@ -304,5 +346,6 @@ void app_main()
     ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
     wifi_init();
     obtain_time();
+    driver_init();
     xTaskCreate(&mqtt_task, "mqtt_task", 8192, NULL, 5, NULL);
 }
