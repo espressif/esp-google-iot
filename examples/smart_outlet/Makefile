@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := mqtt_logic_producer_esp32
+PROJECT_NAME := smart_outlet
 
 EXTRA_COMPONENT_DIRS += $(PROJECT_PATH)/../../../esp-google-iot
 
