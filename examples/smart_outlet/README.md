@@ -57,5 +57,5 @@ A subscription to the topic `/devices/{device-id}/config` is established on star
 As a subscription to the wildcard topic `/devices/{device-id}/commands/#` is established in this example, you can send commands to the device by following instruction given [here](https://cloud.google.com/iot/docs/how-tos/commands).
 
 - Set Output GPIO under `make menuconfig` -> `Example Configuration` -> `Output GPIO`
-- Send `{ "outlet": 0 }` or `{ "outlet": 1 }` from Google Cloud IoT Core Device Console to change GPIO output.
+- Send `{"outlet": 0}` or `{"outlet": 1}` from Google Cloud IoT Core Device Console to change GPIO output.
 
