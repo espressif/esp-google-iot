@@ -1,6 +1,6 @@
 # ESP-Google-IoT
 
-Offering for seamless on-boarding of ESP32 based devices to Google Cloud using IoT Edge Embedded C SDK.
+This framework enables Google IoT Core cloud connectivity with ESP32 based platforms using Google IoT Edge Embedded SDK.
 
 ## Architecture
 
@@ -15,4 +15,5 @@ Offering for seamless on-boarding of ESP32 based devices to Google Cloud using I
 ## Getting Started
 
 - Please refer to https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html for setting ESP-IDF
+  - ESP-IDF v3.2 and above is recommended version
 - Please refer to [example README](examples/mqtt_logic_producer_esp32/README.md) for setting up MQTT application
