@@ -24,6 +24,7 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 #include <iotc.h>
+#include <iotc_jwt.h>
 
 extern const uint8_t ec_pv_key_start[] asm("_binary_private_key_pem_start");
 extern const uint8_t ec_pv_key_end[] asm("_binary_private_key_pem_end");
@@ -219,8 +220,7 @@ void on_connection_state_changed(iotc_context_handle_t in_context_handle,
            with previously set configuration, which has been provided
            to this callback in the conn_data structure. */
             iotc_connect(
-                in_context_handle, conn_data->project_id, conn_data->device_path,
-                conn_data->private_key_data, conn_data->jwt_expiration_period_sec,
+                in_context_handle, conn_data->username, conn_data->password, conn_data->client_id,
                 conn_data->connection_timeout, conn_data->keepalive_timeout,
                 &on_connection_state_changed);
         }
@@ -276,6 +276,17 @@ static void wifi_init(void)
 
 static void mqtt_task(void *pvParameters)
 {
+    /* Format the key type descriptors so the client understands
+     which type of key is being reprenseted. In this case, a PEM encoded
+     byte array of a ES256 key. */
+    iotc_crypto_key_data_t iotc_connect_private_key_data;
+    iotc_connect_private_key_data.crypto_key_signature_algorithm =
+      IOTC_CRYPTO_KEY_SIGNATURE_ALGORITHM_ES256;
+    iotc_connect_private_key_data.crypto_key_union_type =
+      IOTC_CRYPTO_KEY_UNION_TYPE_PEM;
+    iotc_connect_private_key_data.crypto_key_union.key_pem.key =
+      ec_pv_key_start;
+
     /* initialize iotc library and create a context to use to connect to the
     * GCP IoT Core Service. */
     const iotc_state_t error_init = iotc_initialize();
@@ -304,16 +315,23 @@ static void mqtt_task(void *pvParameters)
     const uint16_t connection_timeout = 0;
     const uint16_t keepalive_timeout = 20;
 
-    iotc_crypto_private_key_data_t key_data;
-    key_data.private_key_signature_algorithm =
-        IOTC_JWT_PRIVATE_KEY_SIGNATURE_ALGORITHM_ES256;
-    key_data.private_key_union_type = IOTC_CRYPTO_KEY_UNION_TYPE_PEM;
-    key_data.private_key_union.key_pem.key = (char *) ec_pv_key_start;
+    /* Generate the client authentication JWT, which will serve as the MQTT
+     * password. */
+    char jwt[IOTC_JWT_SIZE] = {0};
+    size_t bytes_written = 0;
+    iotc_state_t state = iotc_create_iotcore_jwt(
+        CONFIG_GIOT_PROJECT_ID,
+        /*jwt_expiration_period_sec=*/3600, &iotc_connect_private_key_data, jwt,
+        IOTC_JWT_SIZE, &bytes_written);
+
+    if (IOTC_STATE_OK != state) {
+        printf("iotc_create_iotcore_jwt returned with error: %ul", state);
+        return -1;
+    }
 
     char *device_path = NULL;
     asprintf(&device_path, DEVICE_PATH, CONFIG_GIOT_PROJECT_ID, CONFIG_GIOT_LOCATION, CONFIG_GIOT_REGISTRY_ID, CONFIG_GIOT_DEVICE_ID);
-    iotc_connect(iotc_context, CONFIG_GIOT_PROJECT_ID, device_path, &key_data,
-                 /*{jwt_expiration_period_sec=*/3600, connection_timeout,
+    iotc_connect(iotc_context, NULL, jwt, device_path, connection_timeout,
                  keepalive_timeout, &on_connection_state_changed);
     free(device_path);
     /* The IoTC Client was designed to be able to run on single threaded devices.

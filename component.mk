@@ -29,6 +29,7 @@ COMPONENT_ADD_INCLUDEDIRS := \
 
 COMPONENT_SRCDIRS := \
         iot-edge-sdk-embedded-c/src/bsp/tls/mbedtls \
+        iot-edge-sdk-embedded-c/src/bsp/crypto/mbedtls \
         iot-edge-sdk-embedded-c/src/libiotc \
         iot-edge-sdk-embedded-c/src/libiotc/control_topic \
         iot-edge-sdk-embedded-c/src/libiotc/datastructures \
