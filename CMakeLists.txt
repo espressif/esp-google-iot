@@ -2,7 +2,7 @@
 # Component Makefile
 #
 
-set (GOOGLE_IOT_SDK ${CMAKE_CURRENT_LIST_DIR}/iot-edge-sdk-embedded-c)
+set (GOOGLE_IOT_SDK ${CMAKE_CURRENT_LIST_DIR}/iot-device-sdk-embedded-c)
 
 set (COMPONENT_ADD_INCLUDEDIRS
         "${GOOGLE_IOT_SDK}/src/bsp"
@@ -29,6 +29,7 @@ set (COMPONENT_ADD_INCLUDEDIRS
 
 set (COMPONENT_SRCDIRS
         "${GOOGLE_IOT_SDK}/src/bsp/tls/mbedtls"
+        "${GOOGLE_IOT_SDK}/src/bsp/crypto/mbedtls"
         "${GOOGLE_IOT_SDK}/src/libiotc"
         "${GOOGLE_IOT_SDK}/src/libiotc/control_topic"
         "${GOOGLE_IOT_SDK}/src/libiotc/datastructures"
