@@ -12,5 +12,6 @@ This framework enables Google IoT Core cloud connectivity with ESP32 based platf
 ## Getting Started
 
 - Please refer to https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html for setting ESP-IDF
+  - ESP-IDF can be downloaded from https://github.com/espressif/esp-idf/
   - ESP-IDF v3.2 and above is recommended version
-- Please refer to [example README](examples/smart_outlet/README.md) for setting up MQTT application
+- Please refer to [example README](examples/smart_outlet/README.md) for setting up smart outlet use case which allows to control load connected to configurable GPIO on ESP32 using Google IoT Core Cloud
