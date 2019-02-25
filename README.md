@@ -1,10 +1,7 @@
 # ESP-Google-IoT
 
-This framework enables Google IoT Core cloud connectivity with ESP32 based platforms using Google IoT Edge Embedded SDK.
+This framework enables Google IoT Core cloud connectivity with ESP32 based platforms using [Google IoT Device Embedded SDK](https://github.com/GoogleCloudPlatform/iot-device-sdk-embedded-c/blob/master/README.md).
 
-## Architecture
-
-![Google IoT Core](docs/_static/giot.png)
 
 ## Supported Hardware
 
