@@ -104,6 +104,7 @@ void publish_telemetry_event(iotc_context_handle_t context_handle,
                  iotc_example_qos,
                  /*callback=*/NULL, /*user_data=*/NULL);
     free(publish_topic);
+    free(publish_message);
 }
 
 void iotc_mqttlogic_subscribe_callback(
