@@ -51,7 +51,7 @@ This example publishes temperature data every 10 seconds to the topic `/devices/
 
 To know more about configuring devices from Google IoT Core visit [here](https://cloud.google.com/iot/docs/how-tos/config/configuring-devices)
 
-A subscription to the topic `/devices/{device-id}/config` is established on start-up, thus you recieve configuration details in the registered subscribe callback `iotc_mqttlogic_subscribe_callback`
+A subscription to the topic `/devices/{device-id}/config` is established on start-up, thus you receive configuration details in the registered subscribe callback `iotc_mqttlogic_subscribe_callback`
 
 ### Send Device Command
 As a subscription to the wildcard topic `/devices/{device-id}/commands/#` is established in this example, you can send commands to the device by following instruction given [here](https://cloud.google.com/iot/docs/how-tos/commands).
