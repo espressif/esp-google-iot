@@ -104,6 +104,7 @@ void publish_telemetry_event(iotc_context_handle_t context_handle,
                  iotc_example_qos,
                  /*callback=*/NULL, /*user_data=*/NULL);
     free(publish_topic);
+    free(publish_message);
 }
 
 void iotc_mqttlogic_subscribe_callback(
@@ -270,7 +271,7 @@ static void wifi_init(void)
 static void mqtt_task(void *pvParameters)
 {
     /* Format the key type descriptors so the client understands
-     which type of key is being reprenseted. In this case, a PEM encoded
+     which type of key is being represented. In this case, a PEM encoded
      byte array of a ES256 key. */
     iotc_crypto_key_data_t iotc_connect_private_key_data;
     iotc_connect_private_key_data.crypto_key_signature_algorithm = IOTC_CRYPTO_KEY_SIGNATURE_ALGORITHM_ES256;
