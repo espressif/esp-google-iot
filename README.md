@@ -1,6 +1,6 @@
 # ESP-Google-IoT
 
-This framework enables Google IoT Core cloud connectivity with ESP32 based platforms using [Google IoT Device Embedded SDK](https://github.com/GoogleCloudPlatform/iot-device-sdk-embedded-c/blob/master/README.md).
+This framework enables Google Cloud IoT Core connectivity with ESP32 based platforms using [Google Cloud IoT Device SDK](https://github.com/GoogleCloudPlatform/iot-device-sdk-embedded-c/blob/master/README.md).
 
 
 ## Supported Hardware
@@ -14,4 +14,4 @@ This framework enables Google IoT Core cloud connectivity with ESP32 based platf
 - Please refer to https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html for setting ESP-IDF
   - ESP-IDF can be downloaded from https://github.com/espressif/esp-idf/
   - ESP-IDF v3.2 and above is recommended version
-- Please refer to [example README](examples/smart_outlet/README.md) for setting up smart outlet use case which allows to control load connected to configurable GPIO on ESP32 using Google IoT Core Cloud
+- Please refer to [example README](examples/smart_outlet/README.md) for setting up smart outlet use case which allows to control load connected to configurable GPIO on ESP32 using Google Cloud IoT Core
