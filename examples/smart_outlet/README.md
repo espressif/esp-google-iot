@@ -3,11 +3,11 @@
 
 ----------------------
 
-## Google IoT Core Cloud Setup
+## Google IoT Core Setup
 
 
 Follow this [getting-started-guide ](https://cloud.google.com/iot/docs/how-tos/getting-started) to do
-the initial Google IoT core setup.
+the initial Google Cloud IoT Core setup.
 
 ### Create Public/Private Key pair
 
@@ -78,7 +78,7 @@ static void wifi_init(void)
 
 ```
 
-### Connecting ESP32 to Google-IoT-Core
+### Connecting ESP32 to Cloud IoT Core
 
 After wifi connection is established, invoke `iotc_connect()` API in the application which initiates a connection to Cloud IoT Core.
 
@@ -116,7 +116,7 @@ void on_publication( iotc_context_handle_t in_context_handle,
 
 ```
 
-### Subscribing to Cloud Sub/Pub topics
+### Subscribing to MQTT topics
 
 To subscribe to a topic, call `iotc_subscribe()`. Subscription must include:
 
@@ -159,7 +159,7 @@ Set Project ID, Location, Registry ID and Device ID under `make menuconfig` -> `
 
 `project_id` of your project can be fetched from [resources page](https://console.cloud.google.com/cloud-resource-manager)
 
-Fetch `location`, `registry_id` and `device_id` from the Google IoT core registry.
+Fetch `location`, `registry_id` and `device_id` from the Google IoT Core registry.
 
 ### Flashing client application
 
