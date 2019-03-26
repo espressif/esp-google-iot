@@ -5,6 +5,6 @@
 
 PROJECT_NAME := smart_outlet
 
-EXTRA_COMPONENT_DIRS += $(PROJECT_PATH)/../../../esp-google-iot
+EXTRA_COMPONENT_DIRS := $(realpath ../..)
 
 include $(IDF_PATH)/make/project.mk
