@@ -98,7 +98,7 @@ void publish_telemetry_event(iotc_context_handle_t context_handle,
     asprintf(&publish_topic, PUBLISH_TOPIC_EVENT, CONFIG_GIOT_DEVICE_ID);
     char *publish_message = NULL;
     asprintf(&publish_message, TEMPERATURE_DATA, MIN_TEMP + rand() % 10);
-    ESP_LOGI(TAG, "publishing msg \"%s\" to topic: \"%s\"\n", publish_message, publish_topic);
+    ESP_LOGI(TAG, "publishing msg \"%s\" to topic: \"%s\"", publish_message, publish_topic);
 
     iotc_publish(context_handle, publish_topic, publish_message,
                  iotc_example_qos,
@@ -117,7 +117,7 @@ void iotc_mqttlogic_subscribe_callback(
     IOTC_UNUSED(state);
     IOTC_UNUSED(user_data);
     if (params != NULL && params->message.topic != NULL) {
-        ESP_LOGI(TAG, "Subscription Topic: %s\n", params->message.topic);
+        ESP_LOGI(TAG, "Subscription Topic: %s", params->message.topic);
         char *sub_message = (char *)malloc(params->message.temporary_payload_data_length + 1);
         if (sub_message == NULL) {
             ESP_LOGE(TAG, "Failed to allocate memory");
@@ -125,11 +125,11 @@ void iotc_mqttlogic_subscribe_callback(
         }
         memcpy(sub_message, params->message.temporary_payload_data, params->message.temporary_payload_data_length);
         sub_message[params->message.temporary_payload_data_length] = '\0';
-        ESP_LOGI(TAG, "Message Payload: %s \n", sub_message);
+        ESP_LOGI(TAG, "Message Payload: %s ", sub_message);
         if (strcmp(subscribe_topic_command, params->message.topic) == 0) {
             int value;
             sscanf(sub_message, "{\"outlet\": %d}", &value);
-            ESP_LOGI(TAG, "value: %d\n", value);
+            ESP_LOGI(TAG, "value: %d", value);
             if (value == 1) {
                 gpio_set_level(OUTPUT_GPIO, true);
             } else if (value == 0) {
@@ -149,18 +149,18 @@ void on_connection_state_changed(iotc_context_handle_t in_context_handle,
     /* IOTC_CONNECTION_STATE_OPENED means that the connection has been
        established and the IoTC Client is ready to send/recv messages */
     case IOTC_CONNECTION_STATE_OPENED:
-        printf("connected!\n");
+        ESP_LOGI(TAG, "connected!");
 
         /* Publish immediately upon connect. 'publish_function' is defined
            in this example file and invokes the IoTC API to publish a
            message. */
         asprintf(&subscribe_topic_command, SUBSCRIBE_TOPIC_COMMAND, CONFIG_GIOT_DEVICE_ID);
-        printf("subscribe to topic: \"%s\"\n", subscribe_topic_command);
+        ESP_LOGI(TAG, "subscribing to topic: \"%s\"", subscribe_topic_command);
         iotc_subscribe(in_context_handle, subscribe_topic_command, IOTC_MQTT_QOS_AT_LEAST_ONCE,
                        &iotc_mqttlogic_subscribe_callback, /*user_data=*/NULL);
 
         asprintf(&subscribe_topic_config, SUBSCRIBE_TOPIC_CONFIG, CONFIG_GIOT_DEVICE_ID);
-        printf("subscribe to topic: \"%s\"\n", subscribe_topic_config);
+        ESP_LOGI(TAG, "subscribing to topic: \"%s\"", subscribe_topic_config);
         iotc_subscribe(in_context_handle, subscribe_topic_config, IOTC_MQTT_QOS_AT_LEAST_ONCE,
                        &iotc_mqttlogic_subscribe_callback, /*user_data=*/NULL);
 
@@ -179,7 +179,7 @@ void on_connection_state_changed(iotc_context_handle_t in_context_handle,
        in this example file and invokes the IoTC API to publish a
        message. */
     case IOTC_CONNECTION_STATE_OPEN_FAILED:
-        printf("ERROR!\tConnection has failed reason %d\n\n", state);
+        ESP_LOGI(TAG, "ERROR! Connection has failed reason %d", state);
 
         /* exit it out of the application by stopping the event loop. */
         iotc_events_stop();
@@ -210,7 +210,7 @@ void on_connection_state_changed(iotc_context_handle_t in_context_handle,
                in this example. */
             iotc_events_stop();
         } else {
-            printf("connection closed - reason %d!\n", state);
+            ESP_LOGE(TAG, "connection closed - reason %d!", state);
             /* The disconnection was unforeseen.  Try reconnect to the server
             with previously set configuration, which has been provided
             to this callback in the conn_data structure. */
@@ -222,7 +222,7 @@ void on_connection_state_changed(iotc_context_handle_t in_context_handle,
         break;
 
     default:
-        printf("wrong value\n");
+        ESP_LOGE(TAG, "incorrect connection state value.");
         break;
     }
 }
@@ -283,7 +283,7 @@ static void mqtt_task(void *pvParameters)
     const iotc_state_t error_init = iotc_initialize();
 
     if (IOTC_STATE_OK != error_init) {
-        printf(" iotc failed to initialize, error: %d\n", error_init);
+        ESP_LOGE(TAG, " iotc failed to initialize, error: %d", error_init);
         vTaskDelete(NULL);
     }
 
@@ -292,7 +292,7 @@ static void mqtt_task(void *pvParameters)
         to numerous topics. */
     iotc_context = iotc_create_context();
     if (IOTC_INVALID_CONTEXT_HANDLE >= iotc_context) {
-        printf(" iotc failed to create context, error: %d\n", -iotc_context);
+        ESP_LOGE(TAG, " iotc failed to create context, error: %d", -iotc_context);
         vTaskDelete(NULL);
     }
 
@@ -314,7 +314,7 @@ static void mqtt_task(void *pvParameters)
                              IOTC_JWT_SIZE, &bytes_written);
 
     if (IOTC_STATE_OK != state) {
-        printf("iotc_create_iotcore_jwt returned with error: %ul", state);
+        ESP_LOGE(TAG, "iotc_create_iotcore_jwt returned with error: %ul", state);
         vTaskDelete(NULL);
     }
 

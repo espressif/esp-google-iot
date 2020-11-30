@@ -1,0 +1,37 @@
+# gtags
+GTAGS
+GRTAGS
+GPATH
+
+# emacs
+.dir-locals.el
+
+# emacs temp file suffixes
+*~
+.#*
+\#*#
+
+# eclipse setting
+.settings
+
+# MacOS directory files
+.DS_Store
+
+# Example project files
+examples/**/sdkconfig
+examples/**/sdkconfig.old
+examples/**/build
+
+# VS Code Settings
+.vscode/
+
+# VIM files
+*.swp
+*.swo
+
+# Clion IDE CMake build & config
+.idea/
+cmake-build-*/
+
+# ESP-IDF default build directory name
+build
