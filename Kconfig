@@ -8,7 +8,7 @@ config GIOT_PROJECT_ID
 
 config GIOT_LOCATION
     string "Google Cloud location"
-    default "us-central1-a"
+    default "us-central1"
     help
         Google Cloud region
 
