@@ -211,11 +211,32 @@ void on_connection_state_changed(iotc_context_handle_t in_context_handle,
             iotc_events_stop();
         } else {
             ESP_LOGE(TAG, "connection closed - reason %d!", state);
+
+            // TODO: de-duplicate
+            iotc_crypto_key_data_t iotc_connect_private_key_data;
+            iotc_connect_private_key_data.crypto_key_signature_algorithm = IOTC_CRYPTO_KEY_SIGNATURE_ALGORITHM_ES256;
+            iotc_connect_private_key_data.crypto_key_union_type = IOTC_CRYPTO_KEY_UNION_TYPE_PEM;
+            iotc_connect_private_key_data.crypto_key_union.key_pem.key = (char *) ec_pv_key_start;
+
+            /* Generate the client authentication JWT, which will serve as the MQTT
+            * password. */
+            char jwt[IOTC_JWT_SIZE] = {0};
+            size_t bytes_written = 0;
+            state = iotc_create_iotcore_jwt(
+                    CONFIG_GIOT_PROJECT_ID,
+                    /*jwt_expiration_period_sec=*/3600, &iotc_connect_private_key_data, jwt,
+                    IOTC_JWT_SIZE, &bytes_written);
+
+            if (IOTC_STATE_OK != state) {
+                ESP_LOGE(TAG, "iotc_create_iotcore_jwt returned with error: %ul", state);
+                vTaskDelete(NULL);
+            }
+
             /* The disconnection was unforeseen.  Try reconnect to the server
             with previously set configuration, which has been provided
             to this callback in the conn_data structure. */
             iotc_connect(
-                in_context_handle, conn_data->username, conn_data->password, conn_data->client_id,
+                in_context_handle, conn_data->username, jwt, conn_data->client_id,
                 conn_data->connection_timeout, conn_data->keepalive_timeout,
                 &on_connection_state_changed);
         }
