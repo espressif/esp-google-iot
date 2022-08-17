@@ -195,6 +195,11 @@ void on_connection_state_changed(iotc_context_handle_t in_context_handle,
     case IOTC_CONNECTION_STATE_CLOSED:
         free(subscribe_topic_command);
         free(subscribe_topic_config);
+        /* Prevent dangling pointers that may happen if IOTC_CONNECTION_STATE_CLOSED
+           state is called twice in a row. */
+        subscribe_topic_command = NULL;
+        subscribe_topic_config = NULL;
+
         /* When the connection is closed it's better to cancel some of previously
            registered activities. Using cancel function on handler will remove the
            handler from the timed queue which prevents the registered handle to be
