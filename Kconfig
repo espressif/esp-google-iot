@@ -29,4 +29,57 @@ config GIOT_DEBUG_OUTPUT
     help
         Select this option to enable debugging support
 
+config IOTC_MEMORY_LIMITER_APPLICATION_MEMORY_LIMIT
+    int "Google IoT Core Application Memory Limit"
+    default 524288
+    help
+        Set application memory limit for Google IoT Core
+
+config IOTC_MEMORY_LIMITER_SYSTEM_MEMORY_LIMIT
+    int "Google IoT Core System Memory Limit"
+    default 2024
+    help
+        Set system memory limit for Google IoT Core
+
+config IOTC_IO_BUFFER_SIZE
+    int "Google IoT Core IO Buffer Size"
+    default 32
+    help
+        Set Google IoT Core IO buffer size
+
+config IOTC_BACKOFF_CHECK_TIME
+    int "Google IoT Core Backoff Check Time"
+    default 60
+    help
+        Set Google IoT Core backoff check time
+
+config IOTC_MQTT_MAX_PAYLOAD_SIZE
+    int "Google IoT Core MQTT Max Payload Size"
+    default 131072
+    help
+        Set Google IoT Core max size for MQTT payloads
+
+config IOTC_DEFAULT_IDLE_TIMEOUT
+    int "Google IoT Core Default Idle Timeout"
+    default 1
+    help
+        Set Google IoT Core default idle timeout
+
+config IOTC_MAX_IDLE_TIMEOUT
+    int "Google IoT Core Max Idle Timeout"
+    default 5
+    help
+        Set Google IoT Core max idle timeout
+
+config IOTC_MQTT_PORT
+    int "Google IoT Core MQTT Port"
+    default 8883
+    help
+        Set Google IoT Core MQTT port. Insecure connections usually use 1883
+
+config IOTC_MQTT_HOST
+    string "Google IoT MQTT Host"
+    default "mqtt.2030.ltsapis.goog"
+    help
+        Set Google IoT Core MQTT Host
 endmenu
