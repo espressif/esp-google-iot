@@ -13,7 +13,7 @@
 #include "freertos/event_groups.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
-#include "esp_event_loop.h"
+#include "esp_event.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "jsmn.h"
@@ -140,6 +140,25 @@ void iotc_mqttlogic_subscribe_callback(
     }
 }
 
+iotc_state_t generate_jwt(char* dst_jwt_buf, size_t dst_jwt_buf_len) {
+    /* Format the key type descriptors so the client understands
+     which type of key is being represented. In this case, a PEM encoded
+     byte array of a ES256 key. */
+    iotc_crypto_key_data_t iotc_connect_private_key_data;
+    iotc_connect_private_key_data.crypto_key_signature_algorithm = IOTC_CRYPTO_KEY_SIGNATURE_ALGORITHM_ES256;
+    iotc_connect_private_key_data.crypto_key_union_type = IOTC_CRYPTO_KEY_UNION_TYPE_PEM;
+    iotc_connect_private_key_data.crypto_key_union.key_pem.key = (char *) ec_pv_key_start;
+
+    /* Generate the client authentication JWT, which will serve as the MQTT
+    * password. */
+    size_t bytes_written = 0;
+    iotc_state_t state = iotc_create_iotcore_jwt(
+            CONFIG_GIOT_PROJECT_ID,
+            /*jwt_expiration_period_sec=*/3600, &iotc_connect_private_key_data, dst_jwt_buf,
+            dst_jwt_buf_len, &bytes_written);
+    return state;
+}
+
 void on_connection_state_changed(iotc_context_handle_t in_context_handle,
                                  void *data, iotc_state_t state)
 {
@@ -216,11 +235,19 @@ void on_connection_state_changed(iotc_context_handle_t in_context_handle,
             iotc_events_stop();
         } else {
             ESP_LOGE(TAG, "connection closed - reason %d!", state);
+
+            char jwt[IOTC_JWT_SIZE] = {0};
+            state = generate_jwt(jwt, IOTC_JWT_SIZE);
+            if (IOTC_STATE_OK != state) {
+                ESP_LOGE(TAG, "iotc_create_iotcore_jwt returned with error: %ul", state);
+                vTaskDelete(NULL);
+            }
+
             /* The disconnection was unforeseen.  Try reconnect to the server
             with previously set configuration, which has been provided
             to this callback in the conn_data structure. */
             iotc_connect(
-                in_context_handle, conn_data->username, conn_data->password, conn_data->client_id,
+                in_context_handle, conn_data->username, jwt, conn_data->client_id,
                 conn_data->connection_timeout, conn_data->keepalive_timeout,
                 &on_connection_state_changed);
         }
@@ -275,14 +302,6 @@ static void wifi_init(void)
 
 static void mqtt_task(void *pvParameters)
 {
-    /* Format the key type descriptors so the client understands
-     which type of key is being represented. In this case, a PEM encoded
-     byte array of a ES256 key. */
-    iotc_crypto_key_data_t iotc_connect_private_key_data;
-    iotc_connect_private_key_data.crypto_key_signature_algorithm = IOTC_CRYPTO_KEY_SIGNATURE_ALGORITHM_ES256;
-    iotc_connect_private_key_data.crypto_key_union_type = IOTC_CRYPTO_KEY_UNION_TYPE_PEM;
-    iotc_connect_private_key_data.crypto_key_union.key_pem.key = (char *) ec_pv_key_start;
-
     /* initialize iotc library and create a context to use to connect to the
     * GCP IoT Core Service. */
     const iotc_state_t error_init = iotc_initialize();
@@ -312,12 +331,7 @@ static void mqtt_task(void *pvParameters)
     /* Generate the client authentication JWT, which will serve as the MQTT
      * password. */
     char jwt[IOTC_JWT_SIZE] = {0};
-    size_t bytes_written = 0;
-    iotc_state_t state = iotc_create_iotcore_jwt(
-                             CONFIG_GIOT_PROJECT_ID,
-                             /*jwt_expiration_period_sec=*/3600, &iotc_connect_private_key_data, jwt,
-                             IOTC_JWT_SIZE, &bytes_written);
-
+    iotc_state_t state = generate_jwt(jwt, IOTC_JWT_SIZE);
     if (IOTC_STATE_OK != state) {
         ESP_LOGE(TAG, "iotc_create_iotcore_jwt returned with error: %ul", state);
         vTaskDelete(NULL);
